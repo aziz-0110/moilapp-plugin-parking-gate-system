@@ -33,6 +33,14 @@ class Controller(QWidget):
         self.maps_any_g2_alpha = -40
         self.maps_any_g2_beta = 180
         self.maps_any_g2_zoom = 2
+        self.pitch_in_m2 = -90
+        self.yaw_in_m2 = 0
+        self.roll_in_m2 = 0
+        self.zoom_in_m2 = 1
+        self.pitch_out_m2 = 90
+        self.yaw_out_m2= 0
+        self.roll_out_m2 = 0
+        self.zoom_out_m2 = 1
         self.set_stylesheet()
 
     def set_stylesheet(self):
@@ -87,6 +95,7 @@ class Controller(QWidget):
         self.ui.spinBox_right_1.setRange(0, 1)
         self.ui.spinBox_top_1.setRange(0, 1)
         self.ui.spinBox_bottom_4.setRange(0, 1)
+        self.ui.spinBox_rotate_4.setRange(0, 4)
 
         self.ui.spinBox_alpha_max.setValue(self.pano_alpha_max)
         self.ui.spinBox_alpha_4.setValue(self.pano_alpha)
@@ -95,20 +104,35 @@ class Controller(QWidget):
         self.ui.spinBox_right_1.setValue(self.pano_right)
         self.ui.spinBox_top_1.setValue(self.pano_top)
         self.ui.spinBox_bottom_4.setValue(self.pano_buttom)
-        # self.ui.spinBox_rotate_4.valueChanged.connect(self.value_change_pano)
+        self.ui.spinBox_rotate_4.setValue(0)
 
         # gate in view
+        # mode 1
         self.ui.spinBox_alpha_2.setRange(-999, 999)
-        self.ui.spinBox_beta_2.setRange(-999, 999)
+        self.ui.spinBox_beta_2_2.setRange(-999, 999)
         self.ui.spinBox_zoom_2.setRange(1, 100)
         self.ui.spinBox_rotate_2.setRange(0, 4)
 
         self.ui.spinBox_alpha_2.setValue(self.maps_any_g1_alpha)
-        self.ui.spinBox_beta_2.setValue(self.maps_any_g1_beta)
+        self.ui.spinBox_beta_2_2.setValue(self.maps_any_g1_beta)
         self.ui.spinBox_zoom_2.setValue(self.maps_any_g1_zoom)
         self.ui.spinBox_rotate_2.setValue(0)
 
+        # mode 2
+        self.ui.spinBox_alpha_5.setRange(-999,999)
+        self.ui.spinBox_beta_4.setRange(-999, 999)
+        self.ui.spinBox_x_5.setRange(-999,999)
+        self.ui.spinBox_x_6.setRange(1, 100)
+        self.ui.spinBox_2.setRange(0, 4)
+
+        self.ui.spinBox_alpha_5.setValue(self.pitch_in_m2)
+        self.ui.spinBox_beta_4.setValue(self.yaw_in_m2)
+        self.ui.spinBox_x_5.setValue(self.roll_in_m2)
+        self.ui.spinBox_x_6.setValue(self.zoom_in_m2)
+        self.ui.spinBox_2.setValue(0)
+
         # gate out view
+        # mode 1
         self.ui.spinBox_alpha_3.setRange(-999, 999)
         self.ui.spinBox_beta_3.setRange(-999, 999)
         self.ui.spinBox_zoom_3.setRange(1, 100)
@@ -117,7 +141,20 @@ class Controller(QWidget):
         self.ui.spinBox_alpha_3.setValue(self.maps_any_g2_alpha)
         self.ui.spinBox_beta_3.setValue(self.maps_any_g2_beta)
         self.ui.spinBox_zoom_3.setValue(self.maps_any_g2_zoom)
-        self.ui.spinBox_rotate_2.setValue(0)
+        self.ui.spinBox_rotate_3.setValue(0)
+
+        # mode 2
+        self.ui.spinBox_alpha_6.setRange(-999, 999)
+        self.ui.spinBox_beta_5.setRange(-999, 999)
+        self.ui.spinBox_x_7.setRange(-999, 999)
+        self.ui.spinBox_x_8.setRange(0, 100)
+        self.ui.spinBox_4.setRange(0, 4)
+
+        self.ui.spinBox_alpha_6.setValue(self.pitch_out_m2)
+        self.ui.spinBox_beta_5.setValue(self.yaw_out_m2)
+        self.ui.spinBox_x_7.setValue(self.roll_out_m2)
+        self.ui.spinBox_x_8.setValue(self.zoom_out_m2)
+        self.ui.spinBox_4.setValue(0)
 
         self.ui.line_2.hide()
         self.ui.line_6.hide()
@@ -137,42 +174,45 @@ class Controller(QWidget):
 
         self.value_connect_pano()
         self.value_connect_maps_any_m1()
-        # self.ui.spinBox_alpha_1.setStyleSheet(self.model.)
-
-        # if self.ui.btn_radio_mode1.isChecked():
-        #     QMessageBox.information(self, "tes,", f"aa")
-        # else:
-        #     QMessageBox.information(self, "tes,", f"bb")
+        self.value_connect_maps_any_m2()
 
     def value_connect_pano(self):
-        self.ui.spinBox_alpha_max.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_alpha_4.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_beta_1.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_left_1.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_right_1.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_top_1.valueChanged.connect(self.value_change_pano)
-        self.ui.spinBox_bottom_4.valueChanged.connect(self.value_change_pano)
-        # rotate blm fix
-        self.ui.spinBox_rotate_4.valueChanged.connect(self.value_change_pano)
+        self.ui.spinBox_alpha_max.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_alpha_4.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_beta_1.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_left_1.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_right_1.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_top_1.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_bottom_4.valueChanged.connect(lambda: self.value_change_pano(1))
+        self.ui.spinBox_rotate_4.valueChanged.connect(lambda value: self.img_rotate(self.img_pano, value, 3))
 
     def value_connect_maps_any_m1(self):
         # seperti ini juga bisa, bedanya ini langsung mengambil dinilai dari spinbox
         # self.ui.spinBox_alpha_2.valueChanged.connect(lambda value: self.tes("aa", value))
-
         self.ui.spinBox_alpha_2.valueChanged.connect(lambda: self.value_change_maps_any_m1(1))
-        self.ui.spinBox_beta_2.valueChanged.connect(lambda: self.value_change_maps_any_m1(1))
-        # zoom blm fix
+        self.ui.spinBox_beta_2_2.valueChanged.connect(lambda: self.value_change_maps_any_m1(1))
         self.ui.spinBox_zoom_2.valueChanged.connect(lambda: self.value_change_maps_any_m1(1))
         self.ui.spinBox_rotate_2.valueChanged.connect(lambda value: self.img_rotate(self.img_gate_in, value, 1))
 
         self.ui.spinBox_alpha_3.valueChanged.connect(lambda: self.value_change_maps_any_m1(2))
         self.ui.spinBox_beta_3.valueChanged.connect(lambda: self.value_change_maps_any_m1(2))
-        # zoom blm fix
         self.ui.spinBox_zoom_3.valueChanged.connect(lambda: self.value_change_maps_any_m1(2))
-        self.ui.spinBox_rotate_3.valueChanged.connect(lambda: self.value_change_maps_any_m1(2))
+        self.ui.spinBox_rotate_3.valueChanged.connect(lambda value: self.img_rotate(self.img_gate_out, value, 2))
 
-    def tes(self, aa, bb):
-        print(bb)
+    def value_connect_maps_any_m2(self):
+        self.ui.spinBox_alpha_5.valueChanged.connect(lambda: self.value_change_any_mode_2(1))
+        self.ui.spinBox_beta_4.valueChanged.connect(lambda: self.value_change_any_mode_2(1))
+        self.ui.spinBox_x_5.valueChanged.connect(lambda: self.value_change_any_mode_2(1))
+        self.ui.spinBox_x_6.valueChanged.connect(lambda: self.value_change_any_mode_2(1))
+        self.ui.spinBox_2.valueChanged.connect(lambda value: self.img_rotate(self.img_gate_in, value, 1))
+
+        #Spinbox mode 2 Gate_out
+        self.ui.spinBox_alpha_6.valueChanged.connect(lambda: self.value_change_any_mode_2(2))
+        self.ui.spinBox_beta_5.valueChanged.connect(lambda: self.value_change_any_mode_2(2))
+        self.ui.spinBox_x_7.valueChanged.connect(lambda: self.value_change_any_mode_2(2))
+        self.ui.spinBox_x_8.valueChanged.connect(lambda: self.value_change_any_mode_2(2))
+        self.ui.spinBox_4.valueChanged.connect(lambda value: self.img_rotate(self.img_gate_out, value, 2))
+
 
     def change_mode(self):
         if self.ui.btn_radio_mode1.isChecked():
@@ -214,67 +254,72 @@ class Controller(QWidget):
         self.img_gate_in = self.img_fisheye.copy()
         self.img_gate_out = self.img_fisheye.copy()
         self.moildev = self.model.connect_to_moildev(parameter_name)
-        # self.image = cv2.imread('/home/gritz/Documents/ftdc/moilapp/moilapp-pak-heru/src/fisheye.png')
 
-        self.pano_car()
+        self.value_change_pano(0)
         self.anypoint_m1()
+        # self.anypoint_m2()
 
         self.showImg()
 
     def showImg(self):
-        self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
+        # self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
         self.model.show_image_to_label(self.ui.vidio_gate_in, self.img_gate_in, 480)
         self.model.show_image_to_label(self.ui.vidio_gate_out, self.img_gate_out, 480)
 
         self.model.show_image_to_label(self.ui.vidio_fisheye, self.img_fisheye, 280)
 
-    def value_change_pano(self):
-        self.pano_alpha_max = self.ui.spinBox_alpha_max.value()
-        self.pano_alpha = self.ui.spinBox_alpha_4.value()
-        self.pano_beta = self.ui.spinBox_beta_1.value()
-        self.pano_left = self.ui.spinBox_left_1.value()
-        self.pano_right = self.ui.spinBox_right_1.value()
-        self.pano_top = self.ui.spinBox_top_1.value()
-        self.pano_buttom = self.ui.spinBox_bottom_4.value()
+    def value_change_pano(self, status=1):
+        if status == 1:
+            self.pano_alpha_max = self.ui.spinBox_alpha_max.value()
+            self.pano_alpha = self.ui.spinBox_alpha_4.value()
+            self.pano_beta = self.ui.spinBox_beta_1.value()
+            self.pano_left = self.ui.spinBox_left_1.value()
+            self.pano_right = self.ui.spinBox_right_1.value()
+            self.pano_top = self.ui.spinBox_top_1.value()
+            self.pano_buttom = self.ui.spinBox_bottom_4.value()
+
+        rotate = self.ui.spinBox_rotate_4.value()
 
         self.img_pano = self.img_fisheye.copy()
 
-        self.pano_car()
+        # self.pano_car()
+        # alpa max = bisa +/-, alpa = +/-, beta = +/-, left = +/-, right = -, top = -, button = -
+        self.img_pano = self.moildev.panorama_car(self.img_pano, self.pano_alpha_max, self.pano_alpha, self.pano_beta, self.pano_left, self.pano_right, self.pano_top, self.pano_buttom)
+        self.img_pano = cv2.resize(self.img_pano, (900,300))
+        self.img_rotate(self.img_pano, rotate, 3)
 
-        self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
+        # self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
+        # self.img_rotate(self.img_pano, rotate, 3)
 
     def value_change_maps_any_m1(self, status):
         alpha, beta, zoom = 0, 0, 0
         if status == 1:
             alpha = self.ui.spinBox_alpha_2.value()
-            beta = self.ui.spinBox_beta_2.value()
+            beta = self.ui.spinBox_beta_2_2.value()
             zoom = self.ui.spinBox_zoom_2.value()
+            rotate = self.ui.spinBox_rotate_2.value()
 
             self.img_gate_in = self.img_fisheye.copy()
         else:
             alpha = self.ui.spinBox_alpha_3.value()
             beta = self.ui.spinBox_beta_3.value()
             zoom = self.ui.spinBox_zoom_3.value()
+            rotate = self.ui.spinBox_rotate_3.value()
 
             self.img_gate_out = self.img_fisheye.copy()
 
-        img = self.anypoint_s_m1(alpha, beta, zoom)
-
-        if status == 1:
-            self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
-        else:
-            self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
-
-    def anypoint_s_m1(self, alpha, beta, zoom):
+        # img = self.anypoint_s_m1(alpha, beta, zoom)
         x_in, y_in = self.moildev.maps_anypoint_mode1(alpha, beta, zoom)
         img = cv2.remap(self.img_gate_in, x_in, y_in, cv2.INTER_CUBIC)
-        return img
 
-    def pano_car(self):
-        # alpa max = bisa +/-, alpa = +/-, beta = +/-, left = +/-, right = -, top = -, button = -
-        self.img_pano = self.moildev.panorama_car(self.img_pano, self.pano_alpha_max, self.pano_alpha, self.pano_beta, self.pano_left, self.pano_right, self.pano_top, self.pano_buttom)
-        # self.image = cv2.resize(self.image, ())
-        self.img_pano = cv2.resize(self.img_pano, (900,300))
+        if status == 1:
+            self.img_gate_in = img
+            self.img_rotate(img,rotate, 1)
+            # self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
+        else:
+            self.img_gate_out = img
+            self.img_rotate(img,rotate, 2)
+            # self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
 
     def anypoint_m1(self):
         # self.img_gate_in = self.moildev.anypoint_mode1(self.img_gate_in, 90, 180, 2)
@@ -284,6 +329,41 @@ class Controller(QWidget):
         x_out, y_out = self.moildev.maps_anypoint_mode1(self.maps_any_g2_alpha, self.maps_any_g2_beta, self.maps_any_g2_zoom)
         self.img_gate_out = cv2.remap(self.img_gate_out, x_out, y_out, cv2.INTER_CUBIC)
         self.img_gate_out = self.img_rotate(self.img_gate_out, 2)
+
+    def anypoint_m2(self):
+        x_in, y_in = self.moildev.maps_anypoint_mode2(self.pitch_in_m2, self.yaw_in_m2, self.roll_in_m2, self.zoom_in_m2)
+        self.img_gate_in = cv2.remap(self.img_gate_in, x_in, y_in, cv2.INTER_CUBIC)
+
+        x_out, y_out = self.moildev.maps_anypoint_mode2(self.pitch_out_m2, self.yaw_out_m2, self.roll_out_m2, self.zoom_out_m2)
+        self.img_gate_out = cv2.remap(self.img_gate_in, x_out, y_out, cv2.INTER_CUBIC)
+        self.img_gate_out = self.img_rotate(self.img_gate_out, 2)
+
+    def value_change_any_mode_2(self, status):
+        pitch, yaw, roll, zoom, rotate = [0,0,0,0,0]
+        img = self.img_fisheye.copy()
+        if status == 1:
+            pitch = self.ui.spinBox_alpha_5.value()
+            yaw = self.ui.spinBox_beta_4.value()
+            roll = self.ui.spinBox_x_5.value()
+            zoom = self.ui.spinBox_x_6.value()
+            rotate = self.ui.spinBox_2.value()
+
+        else:
+            pitch = self.ui.spinBox_alpha_6.value()
+            yaw = self.ui.spinBox_beta_5.value()
+            roll = self.ui.spinBox_x_7.value()
+            zoom = self.ui.spinBox_x_8.value()
+            rotate = self.ui.spinBox_4.value()
+
+        map_x, map_y = self.moildev.maps_anypoint_mode2(pitch, yaw, roll, zoom)
+        img = cv2.remap(img, map_x, map_y, cv2.INTER_CUBIC)
+
+        if status == 1:
+            self.img_gate_in = img
+            self.img_rotate(img, rotate, 1)
+        else:
+            self.img_gate_out = img
+            self.img_rotate(img, rotate, 2)
 
     def img_rotate(self, img, value, status=0):
         rotate = [0, 90, 180, 270, 360]
@@ -297,20 +377,10 @@ class Controller(QWidget):
             return img
         elif status == 1:
             self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
-        else:
+        elif status == 2:
             self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
-
-    def load_image(self):
-        file = self.model.select_file()
-        if file:
-            if file:
-                self.moildev = self.model.connect_to_moildev(parameter_name=file)
-            self.image_original = cv2.imread(file)
-            self.image = self.image_original.copy()
-            # self.panorma_views()
-            self.show_to_ui()
-
-
+        elif status == 3:
+            self.model.show_image_to_label(self.ui.vidio_pano, img, 944)
 
 class ParkingGateSystem(PluginInterface):
     def __init__(self):

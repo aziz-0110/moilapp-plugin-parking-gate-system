@@ -665,7 +665,7 @@
                       </widget>
                      </item>
                      <item>
-                      <widget class="QSpinBox" name="spinBox_beta_2"/>
+                      <widget class="QSpinBox" name="spinBox_beta_2_2"/>
                      </item>
                      <item>
                       <widget class="QLabel" name="x_2">
