@@ -45,17 +45,17 @@ class Controller(QWidget):
 
     def set_stylesheet(self):
         # This is set up style label on bonding box ui
-        # self.ui.label_7.setStyleSheet(self.model.style_label())
-        # self.ui.label_8.setStyleSheet(self.model.style_label())
-        # self.ui.label_10.setStyleSheet(self.model.style_label())
-        # self.ui.label_9.setStyleSheet(self.model.style_label())
-        # self.ui.label_13.setStyleSheet(self.model.style_label())
+        self.ui.label_7.setStyleSheet(self.model.style_label())
+        self.ui.label_8.setStyleSheet(self.model.style_label())
+        self.ui.label_10.setStyleSheet(self.model.style_label())
+        self.ui.label_13.setStyleSheet(self.model.style_label())
         # self.ui.label_14.setStyleSheet(self.model.style_label())
+        # self.ui.label_9.setStyleSheet(self.model.style_label())
 
-        self.ui.vidio_fisheye.setStyleSheet(self.model.style_label())
-        self.ui.vidio_pano.setStyleSheet(self.model.style_label())
-        self.ui.vidio_gate_in.setStyleSheet(self.model.style_label())
-        self.ui.vidio_gate_out.setStyleSheet(self.model.style_label())
+        # self.ui.vidio_fisheye.setStyleSheet(self.model.style_label())
+        # self.ui.vidio_pano.setStyleSheet(self.model.style_label())
+        # self.ui.vidio_gate_in.setStyleSheet(self.model.style_label())
+        # self.ui.vidio_gate_out.setStyleSheet(self.model.style_label())
         # self.ui.img_plat.setStyleSheet(self.model.style_label())
 
         self.ui.btn_save.setStyleSheet(self.model.style_pushbutton())
@@ -95,7 +95,7 @@ class Controller(QWidget):
         self.ui.spinBox_right_1.setRange(0, 1)
         self.ui.spinBox_top_1.setRange(0, 1)
         self.ui.spinBox_bottom_4.setRange(0, 1)
-        self.ui.spinBox_rotate_4.setRange(0, 4)
+        self.ui.spinBox_rotate_4.setRange(0, 320)
 
         self.ui.spinBox_alpha_max.setValue(self.pano_alpha_max)
         self.ui.spinBox_alpha_4.setValue(self.pano_alpha)
@@ -111,7 +111,7 @@ class Controller(QWidget):
         self.ui.spinBox_alpha_2.setRange(-999, 999)
         self.ui.spinBox_beta_2_2.setRange(-999, 999)
         self.ui.spinBox_zoom_2.setRange(1, 100)
-        self.ui.spinBox_rotate_2.setRange(0, 4)
+        self.ui.spinBox_rotate_2.setRange(0, 320)
 
         self.ui.spinBox_alpha_2.setValue(self.maps_any_g1_alpha)
         self.ui.spinBox_beta_2_2.setValue(self.maps_any_g1_beta)
@@ -136,7 +136,7 @@ class Controller(QWidget):
         self.ui.spinBox_alpha_3.setRange(-999, 999)
         self.ui.spinBox_beta_3.setRange(-999, 999)
         self.ui.spinBox_zoom_3.setRange(1, 100)
-        self.ui.spinBox_rotate_3.setRange(0, 4)
+        self.ui.spinBox_rotate_3.setRange(-360, 360)
 
         self.ui.spinBox_alpha_3.setValue(self.maps_any_g2_alpha)
         self.ui.spinBox_beta_3.setValue(self.maps_any_g2_beta)
@@ -148,7 +148,7 @@ class Controller(QWidget):
         self.ui.spinBox_beta_5.setRange(-999, 999)
         self.ui.spinBox_x_7.setRange(-999, 999)
         self.ui.spinBox_x_8.setRange(0, 100)
-        self.ui.spinBox_4.setRange(0, 4)
+        self.ui.spinBox_4.setRange(-360, 360)
 
         self.ui.spinBox_alpha_6.setValue(self.pitch_out_m2)
         self.ui.spinBox_beta_5.setValue(self.yaw_out_m2)
@@ -261,6 +261,9 @@ class Controller(QWidget):
 
         self.showImg()
 
+    def fisheye_img(self, img, scale_content=False):
+        self.model.show_image_to_label(self.ui.vidio_fisheye, img, width=320, scale_content=scale_content)
+
     def showImg(self):
         # self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
         self.model.show_image_to_label(self.ui.vidio_gate_in, self.img_gate_in, 480)
@@ -285,6 +288,7 @@ class Controller(QWidget):
         # self.pano_car()
         # alpa max = bisa +/-, alpa = +/-, beta = +/-, left = +/-, right = -, top = -, button = -
         self.img_pano = self.moildev.panorama_car(self.img_pano, self.pano_alpha_max, self.pano_alpha, self.pano_beta, self.pano_left, self.pano_right, self.pano_top, self.pano_buttom)
+        # ganti jgn pake cv2
         self.img_pano = cv2.resize(self.img_pano, (900,300))
         self.img_rotate(self.img_pano, rotate, 3)
 
@@ -365,12 +369,15 @@ class Controller(QWidget):
             self.img_gate_out = img
             self.img_rotate(img, rotate, 2)
 
-    def img_rotate(self, img, value, status=0):
-        rotate = [0, 90, 180, 270, 360]
+    def img_rotate(self, img, rotate, status=0):
+        # rotate = [0, 90, 180, 270, 360]
+        # rotate = self.ui.
         h, w = img.shape[:2]
         center = (w / 2, h / 2)
 
-        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=rotate[value], scale=1)
+        # ganti jgn pake cv2
+        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=rotate, scale=1)
+        # rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=rotate[value], scale=1)
         img = cv2.warpAffine(src=img, M=rotate_matrix, dsize=(w, h))
 
         if status == 0:
