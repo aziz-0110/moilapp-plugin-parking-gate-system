@@ -13,8 +13,11 @@ class Controller(QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.model = model
+        self.moildev = None
         self.model_apps = ModelApps()
+        self.model_apps.update_file_config()
         # self.moildev = Moildev()
+        self.parameter_name = None
         self.img_fisheye = None
         self.img_pano = None
         self.img_gate_in = None
@@ -52,14 +55,13 @@ class Controller(QWidget):
         # self.ui.label_14.setStyleSheet(self.model.style_label())
         # self.ui.label_9.setStyleSheet(self.model.style_label())
 
-        # self.ui.vidio_fisheye.setStyleSheet(self.model.style_label())
-        # self.ui.vidio_pano.setStyleSheet(self.model.style_label())
-        # self.ui.vidio_gate_in.setStyleSheet(self.model.style_label())
-        # self.ui.vidio_gate_out.setStyleSheet(self.model.style_label())
-        # self.ui.img_plat.setStyleSheet(self.model.style_label())
+        self.ui.vidio_fisheye.setStyleSheet(self.model.style_label())
+        self.ui.vidio_pano.setStyleSheet(self.model.style_label())
+        self.ui.vidio_gate_in.setStyleSheet(self.model.style_label())
+        self.ui.vidio_gate_out.setStyleSheet(self.model.style_label())
 
         self.ui.btn_save.setStyleSheet(self.model.style_pushbutton())
-        self.ui.btn_stop.setStyleSheet(self.model.style_pushbutton())
+        self.ui.btn_clear.setStyleSheet(self.model.style_pushbutton())
         self.ui.btn_start.setStyleSheet(self.model.style_pushbutton())
         self.ui.btn_params_cam.setStyleSheet(self.model.style_pushbutton())
 
@@ -171,6 +173,7 @@ class Controller(QWidget):
         self.ui.btn_radio_mode2.toggled.connect(self.change_mode)
 
         self.ui.btn_start.clicked.connect(self.start)
+        self.ui.btn_clear.clicked.connect(self.close)
 
         self.value_connect_pano()
         self.value_connect_maps_any_m1()
@@ -249,7 +252,33 @@ class Controller(QWidget):
 
     def start(self):
         source_type, cam_type, source_media, parameter_name = self.model.select_media_source()
-        self.img_fisheye = cv2.imread(source_media)
+        self.parameter_name = parameter_name
+        self.model_apps.set_media_source(source_type, cam_type, source_media, parameter_name)
+        self.model_apps.image_result.connect(self.update_label_fisheye)
+
+        self.model_apps.state_recent_view = "AnypointView"
+        self.model_apps.change_anypoint_mode = "mode_1"
+        self.model_apps.set_draw_polygon = True
+        self.model_apps.create_maps_anypoint_mode_1()
+
+        # informasi
+        # self.moildev.show_config_view_in_information()
+        # media_path = str(config["Media_path"])
+        # camera_type = str(config["Cam_type"])
+        # parameter = str(config["Parameter_name"])
+        # self.ui.label_info_media_path.setText(media_path)
+        # self.ui.label_info_media_type.setText(camera_type)
+        # self.ui.label_info_parameter_used.setText(parameter)
+       
+        if source_type == "Image/Video":
+            self.imageResult(parameter_name)
+
+    def imageResult(self, parameter_name):
+        # for gambar
+        # self.update_label_fisheye(self.model_apps.image)
+
+        # pisahkan fungsi vidio dan gambar
+        self.img_fisheye = self.model_apps.image
         self.img_pano = self.img_fisheye.copy()
         self.img_gate_in = self.img_fisheye.copy()
         self.img_gate_out = self.img_fisheye.copy()
@@ -261,11 +290,44 @@ class Controller(QWidget):
 
         self.showImg()
 
-    def fisheye_img(self, img, scale_content=False):
-        self.model.show_image_to_label(self.ui.vidio_fisheye, img, width=320, scale_content=scale_content)
+    def update_label_fisheye(self, img, scale_content=False):
+        # # mode 1
+        # self.model_apps.state_recent_view = "AnypointView"
+        # self.model_apps.change_anypoint_mode = "mode_1"
+        # self.model_apps.set_draw_polygon = True
+        # self.model_apps.create_maps_anypoint_mode_1()
+        #
+        # # mode 2
+        # self.model_apps.state_recent_view = "AnypointView"
+        # self.model_apps.change_anypoint_mode = "mode_2"
+        # self.model_apps.set_draw_polygon = True
+        # self.model_apps.create_maps_anypoint_mode_2()
+        #
+        # # panorama
+        # self.model_apps.state_recent_view = "PanoramaView"
+        # self.model_apps.change_panorama_mode = "car"
+        # self.model_apps.create_maps_panorama_car()
+
+        # self.img_fisheye = img
+        # self.img_pano = self.img_fisheye.copy()
+        # self.img_gate_in = self.img_fisheye.copy()
+        # self.img_gate_out = self.img_fisheye.copy()
+        # self.moildev = self.model.connect_to_moildev(self.parameter_name)
+
+        # self.value_change_pano(0)
+        # self.anypoint_m1()
+        # # self.anypoint_m2()
+
+        # self.showImg()
+
+        self.model.show_image_to_label(self.ui.vidio_fisheye, img, width=280, scale_content=scale_content)
+        # a = img.copy()
+        self.model.show_image_to_label(self.ui.vidio_pano, img, 944, scale_content=scale_content)
+        self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480, scale_content=scale_content)
+        self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480, scale_content=scale_content)
 
     def showImg(self):
-        # self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
+        self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
         self.model.show_image_to_label(self.ui.vidio_gate_in, self.img_gate_in, 480)
         self.model.show_image_to_label(self.ui.vidio_gate_out, self.img_gate_out, 480)
 
@@ -368,6 +430,18 @@ class Controller(QWidget):
         else:
             self.img_gate_out = img
             self.img_rotate(img, rotate, 2)
+
+    def close(self):
+        self.ui.vidio_fisheye.setText(" ")
+        self.ui.vidio_pano.setText(" ")
+        self.ui.vidio_gate_in.setText(" ")
+        self.ui.vidio_gate_out.setText(" ")
+        self.model_apps.__image_result = None
+        self.model_apps.image = None
+        self.model_apps.image_result = None
+        self.model_apps.image_resize = None
+        self.model_apps.reset_config()
+        self.model_apps.cap = None
 
     def img_rotate(self, img, rotate, status=0):
         # rotate = [0, 90, 180, 270, 360]
