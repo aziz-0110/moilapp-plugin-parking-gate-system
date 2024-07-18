@@ -175,7 +175,7 @@ class Controller(QWidget):
         self.ui.btn_start.clicked.connect(self.start)
         self.ui.btn_clear.clicked.connect(self.close)
 
-        self.value_connect_pano()
+        # self.value_connect_pano()
         self.value_connect_maps_any_m1()
         self.value_connect_maps_any_m2()
 
@@ -284,7 +284,7 @@ class Controller(QWidget):
         self.img_gate_out = self.img_fisheye.copy()
         self.moildev = self.model.connect_to_moildev(parameter_name)
 
-        self.value_change_pano(0)
+        # self.value_change_pano(0)
         self.anypoint_m1()
         # self.anypoint_m2()
 
@@ -320,14 +320,14 @@ class Controller(QWidget):
 
         # self.showImg()
 
-        self.model.show_image_to_label(self.ui.vidio_fisheye, img, width=280, scale_content=scale_content)
+        # self.model.show_image_to_label(self.ui.vidio_fisheye, img, width=280, scale_content=scale_content)
         # a = img.copy()
-        self.model.show_image_to_label(self.ui.vidio_pano, img, 944, scale_content=scale_content)
+        # self.model.show_image_to_label(self.ui.vidio_pano, img, 944, scale_content=scale_content)
         self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480, scale_content=scale_content)
         self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480, scale_content=scale_content)
 
     def showImg(self):
-        self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
+        # self.model.show_image_to_label(self.ui.vidio_pano, self.img_pano, 944)
         self.model.show_image_to_label(self.ui.vidio_gate_in, self.img_gate_in, 480)
         self.model.show_image_to_label(self.ui.vidio_gate_out, self.img_gate_out, 480)
 
@@ -460,10 +460,8 @@ class Controller(QWidget):
             self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
         elif status == 2:
             self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
-        elif status == 3:
-            self.model.show_image_to_label(self.ui.vidio_pano, img, 944)
 
-class ParkingGateSystem(PluginInterface):
+class ParkingGateSystemAziz(PluginInterface):
     def __init__(self):
         super().__init__()
         self.widget = None
