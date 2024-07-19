@@ -179,7 +179,7 @@ class Controller(QWidget):
         self.ui.btn_clear.clicked.connect(self.close)
 
         # tombol predict sementara
-        self.ui.btn_params_cam.clicked.connect(self.predict_model)
+        self.ui.btn_params_cam.clicked.connect(self.cut_plate)
 
         self.value_connect_maps_any_m1()
         self.value_connect_maps_any_m2()
@@ -446,17 +446,17 @@ class Controller(QWidget):
         import cv2
 """
         # Load a pretrained YOLOv8n model
-        model = YOLO("best.pt")
+        model = YOLO("/home/gritzz/Documents/dataset-training/best.pt")
 
-        src = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png"
+        src = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/Cars19.png"
 
         # Run inference on 'bus.jpg' with arguments
         results = model.predict(src, save=True, imgsz=320, conf=0.5, save_txt=True)
 
     def cut_plate(self):
 
-        path_img = "/content/drive/MyDrive/training/predict3/pl_taiwand.jpeg"
-        path_label = "/content/drive/MyDrive/training/predict3/labels/pl_taiwand.txt"
+        path_img = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/Cars19.png"
+        path_label = "../runs/detect/predict2/labels/Cars19.txt"
         # import shutil
         img = cv2.imread(path_img)
         # shutil.copy("/content/drive/MyDrive/training/Colab_Notebooks/parking-gate/runs" , "/content/drive/MyDrive/training/Colab_Notebooks/parking-gate/runs")
@@ -498,7 +498,7 @@ class Controller(QWidget):
         print(f"x={x1}, y={x2}, wx={y1}, wy={y2}")
 
         print(labels)
-        cv2.imwrite("/content/drive/MyDrive/training/crop_plate.jpg", crop)
+        cv2.imwrite("./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate.png", crop)
 
         # plt.imshow(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
 
@@ -506,13 +506,15 @@ class Controller(QWidget):
         result = reader.readtext(crop)
         # text = result[0][-2] + ' ' + result[1][-2]
         text = result[0][-2]
+        
+        print(text)
 
         # plate_img = cv2.imread('/content/runs/detect/predict/test2.jpg')
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        plate_img = cv2.putText(img, text, (x1, y1 + 80), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        #font = cv2.FONT_HERSHEY_SIMPLEX
+        #plate_img = cv2.putText(img, text, (x1, y1 + 80), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
-        cv2.imwrite('/content/drive/MyDrive/training/recognation.jpg', plate_img)
-        plt.imshow(cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB))
+        #cv2.imwrite('/content/drive/MyDrive/training/recognation.jpg', plate_img)
+        #plt.imshow(cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB))
 
     def readimg(self):
         reader = easyocr.Reader(['id'])
