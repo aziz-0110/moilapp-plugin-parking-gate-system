@@ -4,8 +4,15 @@ from PyQt6.QtWidgets import QWidget, QMessageBox
 from src.models.model_apps import ModelApps
 from .ui_main import Ui_Form
 import cv2
-
 # from moildev import Moildev
+
+
+from ultralytics import YOLO
+from matplotlib import pyplot as plt
+import numpy as np
+import easyocr
+import os
+
 
 class Controller(QWidget):
     def __init__(self, model):
@@ -170,6 +177,9 @@ class Controller(QWidget):
 
         self.ui.btn_start.clicked.connect(self.start)
         self.ui.btn_clear.clicked.connect(self.close)
+
+        # tombol predict sementara
+        self.ui.btn_params_cam.clicked.connect(self.predict_model)
 
         self.value_connect_maps_any_m1()
         self.value_connect_maps_any_m2()
@@ -338,11 +348,12 @@ class Controller(QWidget):
             self.img_gate_in = img
             # self.img_rotate(img,rotate, 1)
             self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
-            # cv2.imwrite('')
+            cv2.imwrite('./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png', img)
         else:
             self.img_gate_out = img
             # self.img_rotate(img,rotate, 2)
             self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
+            cv2.imwrite('./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png', img)
 
     def anypoint_m1(self):
         # self.img_gate_in = self.moildev.anypoint_mode1(self.img_gate_in, 90, 180, 2)
@@ -385,10 +396,12 @@ class Controller(QWidget):
             self.img_gate_in = img
             # self.img_rotate(img, rotate, 1)
             self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
+            cv2.imwrite('./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png', img)
         else:
             self.img_gate_out = img
             # self.img_rotate(img, rotate, 2)
             self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
+            cv2.imwrite('./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png', img)
 
     def close(self):
         self.ui.vidio_fisheye.setText(" ")
@@ -421,7 +434,7 @@ class Controller(QWidget):
         elif status == 2:
             self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480)
 
-    def predict(self):
+    def predict_model(self):
         """RECUITMEN
         pip install ultralytics
         pip install easyocr
@@ -435,10 +448,10 @@ class Controller(QWidget):
         # Load a pretrained YOLOv8n model
         model = YOLO("best.pt")
 
-        src = "pl_taiwand.59.22.jpeg"
+        src = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/hasil-moilapp.png"
 
         # Run inference on 'bus.jpg' with arguments
-        results = model.predict(src, save=True, imgsz=320, conf=0.5, save_txt=True, save_dir=src_save)
+        results = model.predict(src, save=True, imgsz=320, conf=0.5, save_txt=True)
 
     def cut_plate(self):
 
