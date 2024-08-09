@@ -6,7 +6,6 @@ from .ui_main import Ui_Form
 import cv2
 # from moildev import Moildev
 
-
 from ultralytics import YOLO
 from matplotlib import pyplot as pl
 import numpy as np
@@ -47,12 +46,12 @@ class Controller(QWidget):
         self.yaw_in_m2 = -38
         self.roll_in_m2 = 35
         self.zoom_in_m2 = 1
-        self.rotate_in_m2 = -43
+        self.rotate_in_m2 = -8
         self.pitch_out_m2 = 20
         self.yaw_out_m2= 38
         self.roll_out_m2 = 1
         self.zoom_out_m2 = 1
-        self.rotate_out_m2 = 0
+        self.rotate_out_m2 = 19
         self.set_stylesheet()
 
     def set_stylesheet(self):
@@ -181,7 +180,7 @@ class Controller(QWidget):
 
         # tombol predict sementara
         self.ui.btn_params_cam.clicked.connect(self.predict_model)
-        # self.ui.btn_params_cam.clicked.connect(self.tes_read)
+        # self.ui.btn_params_cam.clicked.connect(self.pytes)
 
         self.value_connect_maps_any_m1()
         self.value_connect_maps_any_m2()
@@ -473,8 +472,10 @@ class Controller(QWidget):
 
         label_in = '/home/gritzz/Documents/moilapp/runs/detect/predict/labels/result-g-in.txt'
         label_out = '/home/gritzz/Documents/moilapp/runs/detect/predict/labels/result-g-out.txt'
-        plate_in = self.cut_plate(src_in, label_in, 1)
-        plate_out = self.cut_plate(src_out, label_out, 0)
+        self.cut_plate(src_in, label_in, 1)
+        self.cut_plate(src_out, label_out, 0)
+
+        self.pytes()
 
     def tes_read(self):
         import pytesseract
@@ -539,12 +540,12 @@ class Controller(QWidget):
 
         # plt.imshow(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
 
-        reader = easyocr.Reader(['id'], gpu=False)
-        result = reader.readtext(crop)
-        # text = result[0][-2] + ' ' + result[1][-2]
-        text = result[0][-2]
-
-        print(text)
+        # reader = easyocr.Reader(['id'], gpu=False)
+        # result = reader.readtext(crop)
+        # # text = result[0][-2] + ' ' + result[1][-2]
+        # text = result[0][-2]
+        #
+        # print(text)
 
         # plate_img = cv2.imread('/content/runs/detect/predict/test2.jpg')
         #font = cv2.FONT_HERSHEY_SIMPLEX
@@ -552,6 +553,23 @@ class Controller(QWidget):
 
         #cv2.imwrite('/content/drive/MyDrive/training/recognation.jpg', plate_img)
         #plt.imshow(cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB))
+
+    def pytes(self):
+        import pytesseract
+        print("mulai")
+        img1 = cv2.imread("./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate-in.png")
+        img2 = cv2.imread("./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate-out.png")
+        img_rgb1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        img_rgb2 = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
+
+        # Menggunakan Tesseract untuk mengenali teks dengan opsi config
+        config = '--oem 3 --psm 8 -l eng+ind'
+        text_in = pytesseract.image_to_string(img_rgb1, config=config)
+        text_out = pytesseract.image_to_string(img_rgb2, config=config)
+
+        # Menampilkan teks yang dikenali
+        self.ui.label_plt_in.setText(f": {text_in}")
+        self.ui.label_plt_out.setText(f": {text_out}")
 
     def readimg(self):
         reader = easyocr.Reader(['id'])
