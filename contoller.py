@@ -1,3 +1,5 @@
+import shutil
+
 from src.plugin_interface import PluginInterface
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QMessageBox
@@ -42,16 +44,16 @@ class Controller(QWidget):
         self.maps_any_g2_alpha = -40
         self.maps_any_g2_beta = 180
         self.maps_any_g2_zoom = 2
-        self.pitch_in_m2 = 37
-        self.yaw_in_m2 = -38
-        self.roll_in_m2 = 35
-        self.zoom_in_m2 = 1
-        self.rotate_in_m2 = -8
-        self.pitch_out_m2 = 20
-        self.yaw_out_m2= 38
-        self.roll_out_m2 = 1
-        self.zoom_out_m2 = 1
-        self.rotate_out_m2 = 19
+        self.pitch_in_m2 = 38
+        self.yaw_in_m2 = -35
+        self.roll_in_m2 = 37
+        self.zoom_in_m2 = 16
+        self.rotate_in_m2 = -33
+        self.pitch_out_m2 = 33
+        self.yaw_out_m2 = 18
+        self.roll_out_m2 = -1
+        self.zoom_out_m2 = 22
+        self.rotate_out_m2 = 23
         self.set_stylesheet()
 
     def set_stylesheet(self):
@@ -71,14 +73,14 @@ class Controller(QWidget):
         self.ui.btn_params_cam.setStyleSheet(self.model.style_pushbutton())
         self.ui.btn_stop.setStyleSheet(self.model.style_pushbutton())
         self.ui.btn_record.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_4.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_5.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_6.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_7.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_12.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_13.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_14.setStyleSheet(self.model.style_pushbutton())
-        self.ui.pushButton_15.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_4.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_5.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_6.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_7.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_12.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_13.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_14.setStyleSheet(self.model.style_pushbutton())
+        # self.ui.pushButton_15.setStyleSheet(self.model.style_pushbutton())
 
         #frame
         self.ui.frame_4.setStyleSheet(self.model.style_frame_main())
@@ -134,7 +136,7 @@ class Controller(QWidget):
         self.ui.spinBox_beta_4.setValue(self.yaw_in_m2)
         self.ui.spinBox_x_5.setValue(self.roll_in_m2)
         self.ui.spinBox_x_6.setValue(self.zoom_in_m2)
-        self.ui.spinBox_2.setValue(0)
+        self.ui.spinBox_2.setValue(self.rotate_in_m2)
 
         # gate out view
         # mode 1
@@ -159,7 +161,7 @@ class Controller(QWidget):
         self.ui.spinBox_beta_5.setValue(self.yaw_out_m2)
         self.ui.spinBox_x_7.setValue(self.roll_out_m2)
         self.ui.spinBox_x_8.setValue(self.zoom_out_m2)
-        self.ui.spinBox_4.setValue(0)
+        self.ui.spinBox_4.setValue(self.rotate_out_m2)
 
         # self.ui.line_2.hide()
         # self.ui.line_6.hide()
@@ -252,10 +254,10 @@ class Controller(QWidget):
         self.model_apps.set_media_source(source_type, cam_type, source_media, parameter_name)
         self.model_apps.image_result.connect(self.update_label_fisheye)
 
-        self.model_apps.state_recent_view = "AnypointView"
-        self.model_apps.change_anypoint_mode = "mode_1"
-        self.model_apps.set_draw_polygon = True
-        self.model_apps.create_maps_anypoint_mode_1()
+        # self.model_apps.state_recent_view = "AnypointView"
+        # self.model_apps.change_anypoint_mode = "mode_1"
+        # self.model_apps.set_draw_polygon = True
+        # self.model_apps.create_maps_anypoint_mode_1()
 
         # informasi
         # self.moildev.show_config_view_in_information()
@@ -280,8 +282,8 @@ class Controller(QWidget):
         self.moildev = self.model.connect_to_moildev(parameter_name)
 
         # self.value_change_pano(0)
-        self.anypoint_m1()
-        # self.anypoint_m2()
+        # self.anypoint_m1()
+        self.anypoint_m2()
 
         self.showImg()
 
@@ -379,6 +381,8 @@ class Controller(QWidget):
         self.img_gate_out = self.model.remap_image(self.img_gate_out, x_out, y_out)
 
     def anypoint_m2(self):
+        self.img_gate_in = self.model.rotate_image(self.img_fisheye, self.rotate_in_m2)
+        self.img_gate_out = self.model.rotate_image(self.img_fisheye, self.rotate_out_m2)
         x_in, y_in = self.moildev.maps_anypoint_mode2(self.pitch_in_m2, self.yaw_in_m2, self.roll_in_m2, self.zoom_in_m2)
         self.img_gate_in = self.model.remap_image(self.img_gate_in, x_in, y_in)
 
@@ -460,8 +464,11 @@ class Controller(QWidget):
         import os
         import cv2
 """
+
+        if os.path.isdir("~/Documents/moilapp/runs/"):
+            shutil.rmtree("~/Documents/moilapp/runs/")
         # Load a pretrained YOLOv8n model
-        model = YOLO("/home/gritzz/Documents/dataset-training/model-plate-white-(tempory).pt")
+        model = YOLO("./plugins/moilapp-plugin-parking-gate-system-aziz/model/model-plate-white-(tempory).pt")
 
         src_in = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/result-g-in.png"
         src_out = "./plugins/moilapp-plugin-parking-gate-system-aziz/processing/result-g-out.png"
@@ -470,12 +477,13 @@ class Controller(QWidget):
         model.predict(src_in, save=True, imgsz=320, conf=0.5, save_txt=True)
         model.predict(src_out, save=True, imgsz=320, conf=0.5, save_txt=True)
 
-        label_in = '/home/gritzz/Documents/moilapp/runs/detect/predict/labels/result-g-in.txt'
-        label_out = '/home/gritzz/Documents/moilapp/runs/detect/predict/labels/result-g-out.txt'
+        label_in = '~/Documents/moilapp/runs/detect/predict/labels/result-g-in.txt'
+        label_out = '~/Documents/moilapp/runs/detect/predict/labels/result-g-out.txt'
         self.cut_plate(src_in, label_in, 1)
         self.cut_plate(src_out, label_out, 0)
 
-        self.pytes()
+        # self.pytes()
+        self.readimg()
 
     def tes_read(self):
         import pytesseract
@@ -572,16 +580,25 @@ class Controller(QWidget):
         self.ui.label_plt_out.setText(f": {text_out}")
 
     def readimg(self):
-        reader = easyocr.Reader(['id'])
-        result = reader.readtext(crop)
-        text = result[0][-2] + ' ' + result[1][-2]
+        img1 = cv2.imread("./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate-in.png")
+        img2 = cv2.imread("./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate-out.png")
 
-        plate_img = cv2.imread('/content/runs/detect/predict/test2.jpg')
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        plate_img = cv2.putText(plate_img, text, (x1, y1 + 80), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        reader = easyocr.Reader(['id'], gpu=True)
+        result_img1 = reader.readtext(img1)
+        result_img2 = reader.readtext(img2)
+        text_img1 = result_img1[0][-2] + ' ' + result_img1[1][-2]
+        text_img2 = result_img2[0][-2] + ' ' + result_img2[1][-2]
 
-        cv2.imwrite('/content/drive/MyDrive/training/recognation.jpg', plate_img)
-        plt.imshow(cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB))
+        # plate_img = cv2.imread('/content/runs/detect/predict/test2.jpg')
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        # plate_img = cv2.putText(plate_img, text, (x1, y1 + 80), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        # plate_img = cv2.putText(plate_img, text, (x1, y1 + 80), font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
+        self.ui.label_plt_in.setText(f": {result_img1}")
+        self.ui.label_plt_out.setText(f": {result_img2}")
+
+        # cv2.imwrite('/content/drive/MyDrive/training/recognation.jpg', plate_img)
+        # plt.imshow(cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB))
 
 class ParkingGateSystem(PluginInterface):
     def __init__(self):
