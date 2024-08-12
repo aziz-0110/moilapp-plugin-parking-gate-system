@@ -1,4 +1,5 @@
 import shutil
+import threading
 
 from src.plugin_interface import PluginInterface
 from PyQt6 import QtCore
@@ -8,10 +9,10 @@ from .ui_main import Ui_Form
 import cv2
 # from moildev import Moildev
 
-from ultralytics import YOLO
+# from ultralytics import YOLO
 from matplotlib import pyplot as pl
 import numpy as np
-import easyocr
+# import easyocr
 import os
 
 
@@ -180,6 +181,8 @@ class Controller(QWidget):
         self.ui.btn_start.clicked.connect(self.start)
         self.ui.btn_clear.clicked.connect(self.close)
 
+        self.ui.btn_stop.clicked.connect(self.stop)
+
         # tombol predict sementara
         self.ui.btn_params_cam.clicked.connect(self.predict_model)
         # self.ui.btn_params_cam.clicked.connect(self.pytes)
@@ -252,7 +255,7 @@ class Controller(QWidget):
 
         self.parameter_name = parameter_name
         self.model_apps.set_media_source(source_type, cam_type, source_media, parameter_name)
-        self.model_apps.image_result.connect(self.update_label_fisheye)
+        # self.model_apps.image_result.connect(self.update_label_fisheye)
 
         # self.model_apps.state_recent_view = "AnypointView"
         # self.model_apps.change_anypoint_mode = "mode_1"
@@ -268,24 +271,94 @@ class Controller(QWidget):
         # self.ui.label_info_media_type.setText(camera_type)
         # self.ui.label_info_parameter_used.setText(parameter)
 
-        if source_type == "Image/Video":
-            self.imageResult(parameter_name)
+        if(source_media == None):
+            # self.start()
+            self.set_stylesheet()
 
-    def imageResult(self, parameter_name):
+
+        if(source_media.endswith(('.mp4', '.MOV', '.avi'))):
+            self.moildev = self.model.connect_to_moildev(self.parameter_name)
+            self.cam = cv2.VideoCapture(source_media)
+
+            fps = int(self.cam.get(cv2.CAP_PROP_FPS))
+
+            self.timer = QtCore.QTimer()
+            self.timer.timeout.connect(self.imageResult)
+            self.timer.start(fps)
+
+            # import threading
+            # # import multiprocessing as ml
+            # th1 = threading.Thread(target=self.process_video, args=(source_media, 1,))
+            # th2 = threading.Thread(target=self.process_video, args=(source_media, 2,))
+            #
+            # th1.start()
+            # th2.start()
+            # th1.join()
+            # th2.join()
+
+            # self.showImg()
+
+        if(source_media.endswith(('.png', '.jpg', 'jpeg'))):
+            self.imageResult()
+
+        # if source_type == "Image/Video":
+            # self.imageResult(parameter_name)
+
+    def process_video(self, video_path, kondisi):
+        cap = cv2.VideoCapture(video_path)
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # Contoh pemrosesan pada frame
+            # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # Lakukan pemrosesan lain di sini
+
+            self.img_fisheye = frame
+            self.img_gate_in = frame.copy()
+            self.img_gate_out = frame.copy()
+            if kondisi == 1:
+                self.anypoint_m2_in()
+            else:
+                self.anypoint_m2_out()
+
+            self.showImg()
+
+            # cv2.imshow('Processed Video', gray)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
+
+        cap.release()
+        # cv2.destroyAllWindows()
+
+    def imageResult(self):
+        import threading as th
         # for gambar
         # self.update_label_fisheye(self.model_apps.image)
+        ret, frame = self.cam.read()
+        if ret:
+            # pisahkan fungsi vidio dan gambar
+            self.img_fisheye = frame
+            self.img_gate_in = self.img_fisheye.copy()
+            self.img_gate_out = self.img_fisheye.copy()
 
-        # pisahkan fungsi vidio dan gambar
-        self.img_fisheye = self.model_apps.image
-        self.img_gate_in = self.img_fisheye.copy()
-        self.img_gate_out = self.img_fisheye.copy()
-        self.moildev = self.model.connect_to_moildev(parameter_name)
+            # self.value_change_pano(0)
+            # tr1 = th.Thread(target=self.anypoint_m2_in, args=(frame, 1, self.rotate_in_m2, self.pitch_in_m2, self.yaw_in_m2, self.zoom_in_m2))
+            # tr2 = th.Thread(target=self.anypoint_m2_in, args=(frame, 2, self.rotate_out_m2, self.pitch_out_m2, self.yaw_out_m2, self.zoom_out_m2))
+            self.anypoint_m2_in(frame, 1, self.rotate_in_m2, self.pitch_in_m2, self.yaw_in_m2, self.zoom_in_m2)
+            self.anypoint_m2_in(frame, 2, self.rotate_out_m2, self.pitch_out_m2, self.yaw_out_m2, self.zoom_out_m2)
 
-        # self.value_change_pano(0)
-        # self.anypoint_m1()
-        self.anypoint_m2()
+            # tr1.start()
+            # tr2.start()
+            # tr1.join()
+            # tr2.join()
 
-        self.showImg()
+            self.showImg()
+        else:
+            self.cam.release()
+            self.timer.stop()
 
     def update_label_fisheye(self, img, scale_content=False):
         # # mode 1
@@ -321,17 +394,6 @@ class Controller(QWidget):
         # a = img.copy()
         self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480, scale_content=scale_content)
         self.model.show_image_to_label(self.ui.vidio_gate_out, img, 480, scale_content=scale_content)
-
-    def sementara(self, src):
-        img = cv2.imread(src)
-
-        self.model.show_image_to_label(self.ui.vidio_gate_in, img, 480)
-        # self.predict_model()
-        # self.cut_plate()
-        # self.readimg()
-        plate = cv2.imread('./plugins/moilapp-plugin-parking-gate-system-aziz/processing/plate.jpeg')
-
-        self.model.show_image_to_label(self.ui.label_plaeEntry, plate, 240)
 
     def showImg(self):
         self.model.show_image_to_label(self.ui.vidio_gate_in, self.img_gate_in, 480)
@@ -380,15 +442,18 @@ class Controller(QWidget):
         x_out, y_out = self.moildev.maps_anypoint_mode1(self.maps_any_g2_alpha, self.maps_any_g2_beta, self.maps_any_g2_zoom)
         self.img_gate_out = self.model.remap_image(self.img_gate_out, x_out, y_out)
 
-    def anypoint_m2(self):
-        self.img_gate_in = self.model.rotate_image(self.img_fisheye, self.rotate_in_m2)
-        self.img_gate_out = self.model.rotate_image(self.img_fisheye, self.rotate_out_m2)
-        x_in, y_in = self.moildev.maps_anypoint_mode2(self.pitch_in_m2, self.yaw_in_m2, self.roll_in_m2, self.zoom_in_m2)
-        self.img_gate_in = self.model.remap_image(self.img_gate_in, x_in, y_in)
+    def anypoint_m2_in(self, img, kondisi, rotate, pitch, yaw, zoom):
+        img_r = self.model.rotate_image(img, rotate)
+        x_in, y_in = self.moildev.maps_anypoint_mode2(pitch, yaw, zoom)
+        if kondisi == 1:
+            self.img_gate_in = self.model.remap_image(img_r, x_in, y_in)
+        else:
+            self.img_gate_out = self.model.remap_image(img_r, x_in, y_in)
 
-        x_out, y_out = self.moildev.maps_anypoint_mode2(self.pitch_out_m2, self.yaw_out_m2, self.roll_out_m2, self.zoom_out_m2)
-        self.img_gate_out = self.model.remap_image(self.img_gate_in, x_out, y_out)
-        # self.img_gate_out = self.img_rotate(self.img_gate_out, 2)
+    def anypoint_m2_out(self):
+        self.img_gate_out = self.model.rotate_image(self.img_fisheye, self.rotate_out_m2)
+        x_out, y_out = self.moildev.maps_anypoint_mode2(self.pitch_out_m2, self.yaw_out_m2, self.zoom_out_m2)
+        self.img_gate_out = self.model.remap_image(self.img_gate_out, x_out, y_out)
 
     def value_change_any_mode_2(self, status):
         pitch, yaw, roll, zoom, rotate = [0,0,0,0,0]
@@ -408,7 +473,7 @@ class Controller(QWidget):
             rotate = self.ui.spinBox_4.value()
 
         img = self.model.rotate_image(self.img_fisheye, rotate)
-        map_x, map_y = self.moildev.maps_anypoint_car(pitch, yaw, roll, zoom)
+        map_x, map_y = self.moildev.maps_anypoint_mode2(pitch, yaw, zoom)
         img = self.model.remap_image(img, map_x, map_y)
 
         if status == 1:
@@ -433,6 +498,13 @@ class Controller(QWidget):
         self.model_apps.reset_config()
         self.model_apps.cap = None
 
+    def stop(self):
+        self.cam = None
+        self.timer.stop()
+        self.ui.vidio_fisheye.setText(" ")
+        self.ui.vidio_gate_in.setText(" ")
+        self.ui.vidio_gate_out.setText(" ")
+
     def img_rotate(self, img, rotate, status=0):
         # rotate = [0, 90, 180, 270, 360]
         # rotate = self.ui.
@@ -456,14 +528,9 @@ class Controller(QWidget):
     def predict_model(self):
         """RECUITMEN
         pip install ultralytics
-        pip install easyocr
         from ultralytics import YOLO
-        from matplotlib import pyplot as plt
-        import numpy as np
-        import easyocr
-        import os
-        import cv2
 """
+        from ultralytics import YOLO
 
         if os.path.isdir("~/Documents/moilapp/runs/"):
             shutil.rmtree("~/Documents/moilapp/runs/")
@@ -482,8 +549,8 @@ class Controller(QWidget):
         self.cut_plate(src_in, label_in, 1)
         self.cut_plate(src_out, label_out, 0)
 
-        # self.pytes()
-        self.readimg()
+        self.pytes()
+        # self.readimg()
 
     def tes_read(self):
         import pytesseract
